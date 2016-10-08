@@ -5,15 +5,16 @@ from PyQt5.QtWidgets import (QApplication, QGraphicsScene, QGraphicsView,
 from PyQt5.QtCore import (Qt)
 from PyQt5.QtGui import (QColor)
 
+from field import Board
+
 class GraphicsView(QGraphicsView):
     def __init__(self, parent=None):
         QGraphicsView.__init__(self, parent=parent)
 
         scene = QGraphicsScene(self)
 
-        # To indicate the area to display a board for game
-        item = QGraphicsRectItem(-200, -200, 400, 400)
-        scene.addItem(item)
+        board = Board()
+        scene.addItem(board)
         
         self.setScene(scene)
 
