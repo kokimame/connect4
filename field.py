@@ -12,6 +12,7 @@ class Board(QGraphicsObject):
     def __init__(self):
         super().__init__()
         self.grid = [[0] * Board.ROW for _ in range(Board.COL)]
+        self.loadImages()
 
     def paint(self, painter, option, widget):
         # Only to indicate the area for the board
@@ -22,4 +23,14 @@ class Board(QGraphicsObject):
     def boundingRect(self):
         return QRectF(Board.TOPLEFT_X, Board.TOPLEFT_Y,
                             Board.WIDTH, Board.HEIGHT)
+
+    def loadImages(self):
+        global BOARDIMG, REDDISK, BLACKDISK
+        BOARDIMG = QImage("assets/4row_board.png").scaled(Board.CELLSIZE,
+                                            Board.CELLSIZE, Qt.KeepAspectRatio)
+        REDDISK = QImage("assets/4row_red.png").scaled(Board.CELLSIZE,
+                                            Board.CELLSIZE, Qt.KeepAspectRatio)
+        BLACKDISK = QImage("assets/4row_black.png").scaled(Board.CELLSIZE,
+                                            Board.CELLSIZE, Qt.KeepAspectRatio)
+
 
