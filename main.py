@@ -11,6 +11,7 @@ class GraphicsView(QGraphicsView):
 
         scene = QGraphicsScene(self)
 
+        # To indicate the area to display a board for game
         item = QGraphicsRectItem(-200, -200, 400, 400)
         scene.addItem(item)
         
