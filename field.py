@@ -42,7 +42,10 @@ class DropArea(QGraphicsObject):
     def __init__(self):
         super().__init__()
         self.setAcceptDrops(True)
-        self.dragOver = False
+
+    def dropEvent(self, event):
+        print("Area dropped")
+        self.update()
 
     def paint(self, painter, option, widget):
         # No need to display this area but for debug
