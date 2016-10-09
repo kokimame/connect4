@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import (QGraphicsObject)
-from PyQt5.QtCore import (Qt, QRectF)
-from PyQt5.QtGui import (QColor, QImage)
+from PyQt5.QtWidgets import (QGraphicsObject, QApplication)
+from PyQt5.QtCore import (Qt, QRectF, QLineF, QMimeData, QPoint)
+from PyQt5.QtGui import (QColor, QImage, QDrag, QPixmap)
 
 
 class Board(QGraphicsObject):
@@ -58,6 +58,30 @@ class Player(QGraphicsObject):
     def __init__(self):
         super().__init__()
         self.dropped = False
+
+    def mousePressEvent(self, event):
+        self.setCursor(Qt.ClosedHandCursor)
+
+    def mouseMoveEvent(self, event):
+        if QLineF(event.screenPos(),
+                event.buttonDownScreenPos(Qt.LeftButton)).length() < \
+                        QApplication.startDragDistance():
+            return
+
+        drag = QDrag(event.widget())
+        mime = QMimeData()
+        drag.setMimeData(mime)
+
+        mime.setImageData(REDDISK)
+        drag.setPixmap(QPixmap.fromImage(REDDISK))
+        drag.setHotSpot(QPoint(REDDISK.width() / 2, REDDISK.height() / 2))
+
+        drag.exec()
+        self.dropped = True
+        self.setCursor(Qt.OpenHandCursor)
+        
+    def mouseReleasedEvent(self, event):
+        self.setCursor(Qt.OpenHandCursor)
 
     def paint(self, painter, option, widget):
         # Player drag a red disk from here
