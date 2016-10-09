@@ -20,6 +20,22 @@ class Board(QGraphicsObject):
         painter.drawRect(Board.TOPLEFT_X, Board.TOPLEFT_Y,
                             Board.WIDTH, Board.HEIGHT)
 
+        for i in range(Board.ROW):
+            for j in range(Board.COL):
+                if self.grid[i][j] == 1:
+                    painter.drawImage(j*Board.CELLSIZE + Board.TOPLEFT_X,
+                                  i*Board.CELLSIZE + Board.TOPLEFT_Y, REDDISK)
+                elif self.grid[i][j] == 2:
+                    painter.drawImage(j*Board.CELLSIZE + Board.TOPLEFT_X,
+                                  i*Board.CELLSIZE + Board.TOPLEFT_Y, BLACKDISK)
+                # Paint solid image for the grid of the board
+                painter.drawImage(j*Board.CELLSIZE + Board.TOPLEFT_X,
+                                  i*Board.CELLSIZE + Board.TOPLEFT_Y, BOARDIMG)
+
+    def updateGrid(self, col, row, disk):
+        self.grid[row][col] = disk
+        self.update()
+
     def boundingRect(self):
         return QRectF(Board.TOPLEFT_X, Board.TOPLEFT_Y,
                             Board.WIDTH, Board.HEIGHT)
@@ -39,13 +55,24 @@ class DropArea(QGraphicsObject):
     HEIGHT = 75
     TOPLEFT_X = Board.TOPLEFT_X
     TOPLEFT_Y = Board.TOPLEFT_Y - HEIGHT
-    def __init__(self):
+    def __init__(self, board):
         super().__init__()
         self.setAcceptDrops(True)
+        self.board = board
 
     def dropEvent(self, event):
-        print("Area dropped")
-        self.update()
+        col, row = self.getCellToDrop(event.pos().x(), event.pos().y())
+        self.board.updateGrid(col, row, 1)  # The last argument is a flag for Player
+
+    def getCellToDrop(self, mouseX, mouseY):
+        currentCol = int((mouseX + 200) // Board.CELLSIZE)
+        return currentCol, self.getEmptyRow(currentCol)
+
+    def getEmptyRow(self, col):
+        for i in range(Board.ROW-1, -1, -1):
+            if self.board.grid[i][col] == 0:
+                return i
+        return -1
 
     def paint(self, painter, option, widget):
         # No need to display this area but for debug
@@ -60,7 +87,6 @@ class DropArea(QGraphicsObject):
 class Player(QGraphicsObject):
     def __init__(self):
         super().__init__()
-        self.dropped = False
 
     def mousePressEvent(self, event):
         self.setCursor(Qt.ClosedHandCursor)
@@ -76,11 +102,11 @@ class Player(QGraphicsObject):
         drag.setMimeData(mime)
 
         mime.setImageData(REDDISK)
-        drag.setPixmap(QPixmap.fromImage(REDDISK))
-        drag.setHotSpot(QPoint(REDDISK.width() / 2, REDDISK.height() / 2))
+        dragImg = REDDISK.scaled(40, 40, Qt.KeepAspectRatio)
+        drag.setPixmap(QPixmap.fromImage(dragImg))
+        drag.setHotSpot(QPoint(dragImg.width() / 2, dragImg.height()/ 2))
 
         drag.exec()
-        self.dropped = True
         self.setCursor(Qt.OpenHandCursor)
         
     def mouseReleasedEvent(self, event):

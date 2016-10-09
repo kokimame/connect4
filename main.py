@@ -14,7 +14,7 @@ class GraphicsView(QGraphicsView):
 
         board = Board()
         player = Player()
-        dropArea = DropArea()
+        dropArea = DropArea(board)
  
         scene = QGraphicsScene(self)
         scene.addItem(board)
