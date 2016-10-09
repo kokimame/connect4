@@ -11,10 +11,11 @@ class Board(QGraphicsObject):
     TOPLEFT_X, TOPLEFT_Y = -200, -200
     CELLSIZE = 50
 
-    def __init__(self):
+    def __init__(self, computer):
         super().__init__()
         self.grid = [[0] * Board.ROW for _ in range(Board.COL)]
         self.loadImages()
+        self.computer = computer
 
     def paint(self, painter, option, widget):
         # Only to indicate the area for the board
@@ -38,6 +39,65 @@ class Board(QGraphicsObject):
         self.grid[row][col] = disk
         self.update()
 
+        isGameOver = self.isGameOver(disk)
+
+        if isGameOver:
+            msg = 'Player Win' if disk == 1 else 'Computer Win'
+            print(msg + '[Exit From Application]')
+        else:
+            col, row = self.computer.putDisk(self.grid)
+            self.grid[row][col] = 2
+            self.update()
+
+    def isGameOver(self, disk):
+        """
+        Check the 4 direction from top left to bottom right
+           **** 1
+          ***
+         * * *
+        *  *  *
+        4  3  2
+        """
+        for i in range(Board.ROW):
+            for j in range(Board.COL):
+                if self.grid[i][j] == disk:
+                    print('Found disk[%d] at (%d,%d)' % (disk, j, i))
+
+                    if j in range(3) and i in range(Board.ROW - 3):
+                        if self.check4Direction(i, j, disk, dir4=[1, 2, 3]):
+                            return True
+
+                    elif j in range(4, Board.COL - 3) \
+                                    and i in range(Board.ROW - 3):
+                        if self.check4Direction(i, j, disk, dir4=[1, 2, 3, 4]):
+                            return True
+
+                    elif j in range(Board.COL - 4, Board.COL) \
+                                    and i in range(Board.ROW - 3):
+                        if self.check4Direction(i, j, disk, dir4=[3, 4]):
+                            return True
+
+                    elif j in range(Board.COL - 3) \
+                                    and i in range(Board.ROW - 4, Board.ROW):
+                        if  self.check4Direction(i, j, disk, dir4=[1]):
+                            return True
+        return False
+
+    def check4Direction(self, i, j, disk, dir4=[]):
+        # Check horizontaly next 3 right cells
+        if 1 in dir4 and self.grid[i][j+1:j+4] == [disk] * 3:
+            return True
+        # Check diagonally next 3 down-right cells
+        if 2 in dir4 and self.grid[i+1:i+4][j+1:j+4] == [disk] * 3:
+            return True
+        # Check veritically next 3 down cells
+        if 3 in dir4 and self.grid[i+1:i+4][j] == [disk] * 3:
+            return True
+        # Check diagonally next 4 down-left cells
+        if 4 in dir4 and self.grid[i-1:i-4][j-1:j-4] == [disk] * 3:
+            return True
+
+
     def boundingRect(self):
         return QRectF(Board.TOPLEFT_X, Board.TOPLEFT_Y,
                             Board.WIDTH, Board.HEIGHT)
@@ -57,20 +117,16 @@ class DropArea(QGraphicsObject):
     HEIGHT = 75
     TOPLEFT_X = Board.TOPLEFT_X
     TOPLEFT_Y = Board.TOPLEFT_Y - HEIGHT
-    def __init__(self, board, computer):
+    def __init__(self, board):
         super().__init__()
         self.setAcceptDrops(True)
         self.board = board
-        self.computer = computer
 
     def dropEvent(self, event):
         col, row = self.getCellToDrop(event.pos().x(), event.pos().y())
-        self.board.updateGrid(col, row, 1)  # The last argument is a flag for Player
+        # The last argument is a flag for Player
+        self.board.updateGrid(col, row, 1)
 
-        self.setAcceptDrops(False)
-        self.computer.putDisk()
-        self.setAcceptDrops(True)
-        
     def getCellToDrop(self, mouseX, mouseY):
         currentCol = int((mouseX + 200) // Board.CELLSIZE)
         return currentCol, self.getEmptyRow(currentCol)
@@ -92,22 +148,22 @@ class DropArea(QGraphicsObject):
                         DropArea.WIDTH, DropArea.HEIGHT)
 
 class Computer:
-    def __init__(self, board):
-        self.board = board
+    def __init__(self):
+        pass
 
-    def putDisk(self):
+    def putDisk(self, grid):
         # Show all cells where the computer can put a disk
-        print(self.getAllValidCells())
-        validCells = self.getAllValidCells()
-        num = random.randint(0, len(validCells))
-        self.board.updateGrid(validCells[num][0], validCells[num][1], 2)
+        # print(self.getAllValidCells())
+        validCells = self.getAllValidCells(grid)
+        num = random.randint(0, len(validCells)-1)
+        return validCells[num][0], validCells[num][1]
 
 
-    def getAllValidCells(self):
+    def getAllValidCells(self, grid):
         validCells = []
         for j in range(Board.COL):
             for i in range(Board.ROW-1, -1, -1):
-                if self.board.grid[i][j] == 0:
+                if grid[i][j] == 0:
                     validCells.append([j, i]) # [col, row]
                     break
         return validCells

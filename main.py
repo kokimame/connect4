@@ -12,10 +12,10 @@ class GraphicsView(QGraphicsView):
         QGraphicsView.__init__(self, parent=parent)
         self.setBackgroundBrush(QColor(125, 255, 125))
 
-        board = Board()
         player = Player()
-        computer = Computer(board)
-        dropArea = DropArea(board, computer)
+        computer = Computer()
+        board = Board(computer)
+        dropArea = DropArea(board)
  
         scene = QGraphicsScene(self)
         scene.addItem(board)
