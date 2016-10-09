@@ -34,3 +34,35 @@ class Board(QGraphicsObject):
                                             Board.CELLSIZE, Qt.KeepAspectRatio)
 
 
+class DropArea(QGraphicsObject):
+    WIDTH = 400
+    HEIGHT = 75
+    TOPLEFT_X = Board.TOPLEFT_X
+    TOPLEFT_Y = Board.TOPLEFT_Y - HEIGHT
+    def __init__(self):
+        super().__init__()
+        self.setAcceptDrops(True)
+        self.dragOver = False
+
+    def paint(self, painter, option, widget):
+        # No need to display this area but for debug
+        painter.setBrush(QColor(Qt.darkGreen))
+        painter.drawRect(DropArea.TOPLEFT_X, DropArea.TOPLEFT_Y,
+                        DropArea.WIDTH, DropArea.HEIGHT)
+
+    def boundingRect(self):
+        return QRectF(DropArea.TOPLEFT_X, DropArea.TOPLEFT_Y,
+                        DropArea.WIDTH, DropArea.HEIGHT)
+
+class Player(QGraphicsObject):
+    def __init__(self):
+        super().__init__()
+        self.dropped = False
+
+    def paint(self, painter, option, widget):
+        # Player drag a red disk from here
+        painter.drawImage(-275, 225, REDDISK)
+
+    def boundingRect(self):
+        return QRectF(-275, 225, REDDISK.width(), REDDISK.height())
+

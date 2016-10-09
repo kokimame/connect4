@@ -5,20 +5,22 @@ from PyQt5.QtWidgets import (QApplication, QGraphicsScene, QGraphicsView,
 from PyQt5.QtCore import (Qt)
 from PyQt5.QtGui import (QColor)
 
-from field import Board
+from field import *
 
 class GraphicsView(QGraphicsView):
     def __init__(self, parent=None):
         QGraphicsView.__init__(self, parent=parent)
-
-        scene = QGraphicsScene(self)
+        self.setBackgroundBrush(QColor(125, 255, 125))
 
         board = Board()
+        player = Player()
+        dropArea = DropArea()
+ 
+        scene = QGraphicsScene(self)
         scene.addItem(board)
-        
+        scene.addItem(dropArea)
+        scene.addItem(player)
         self.setScene(scene)
-
-        self.setBackgroundBrush(QColor(125, 255, 125))
 
 class MainWindow(QMainWindow):
     def __init__(self, parent=None):
