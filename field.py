@@ -1,3 +1,5 @@
+import random
+
 from PyQt5.QtWidgets import (QGraphicsObject, QApplication)
 from PyQt5.QtCore import (Qt, QRectF, QLineF, QMimeData, QPoint)
 from PyQt5.QtGui import (QColor, QImage, QDrag, QPixmap)
@@ -55,15 +57,20 @@ class DropArea(QGraphicsObject):
     HEIGHT = 75
     TOPLEFT_X = Board.TOPLEFT_X
     TOPLEFT_Y = Board.TOPLEFT_Y - HEIGHT
-    def __init__(self, board):
+    def __init__(self, board, computer):
         super().__init__()
         self.setAcceptDrops(True)
         self.board = board
+        self.computer = computer
 
     def dropEvent(self, event):
         col, row = self.getCellToDrop(event.pos().x(), event.pos().y())
         self.board.updateGrid(col, row, 1)  # The last argument is a flag for Player
 
+        self.setAcceptDrops(False)
+        self.computer.putDisk()
+        self.setAcceptDrops(True)
+        
     def getCellToDrop(self, mouseX, mouseY):
         currentCol = int((mouseX + 200) // Board.CELLSIZE)
         return currentCol, self.getEmptyRow(currentCol)
@@ -83,6 +90,27 @@ class DropArea(QGraphicsObject):
     def boundingRect(self):
         return QRectF(DropArea.TOPLEFT_X, DropArea.TOPLEFT_Y,
                         DropArea.WIDTH, DropArea.HEIGHT)
+
+class Computer:
+    def __init__(self, board):
+        self.board = board
+
+    def putDisk(self):
+        # Show all cells where the computer can put a disk
+        print(self.getAllValidCells())
+        validCells = self.getAllValidCells()
+        num = random.randint(0, len(validCells))
+        self.board.updateGrid(validCells[num][0], validCells[num][1], 2)
+
+
+    def getAllValidCells(self):
+        validCells = []
+        for j in range(Board.COL):
+            for i in range(Board.ROW-1, -1, -1):
+                if self.board.grid[i][j] == 0:
+                    validCells.append([j, i]) # [col, row]
+                    break
+        return validCells
 
 class Player(QGraphicsObject):
     def __init__(self):
