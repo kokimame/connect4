@@ -6,7 +6,7 @@ from PyQt5.QtGui import (QColor, QImage, QDrag, QPixmap)
 
 
 class Board(QGraphicsObject):
-    ROW, COL = 8, 8
+    ROW, COL = 8, 8  # COL must be >= 6
     WIDTH, HEIGHT = 400, 400
     TOPLEFT_X, TOPLEFT_Y = -200, -200
     CELLSIZE = 50
@@ -40,6 +40,7 @@ class Board(QGraphicsObject):
         self.update()
 
         isGameOver = self.isGameOver(disk)
+        print("isGameOver: "+str(isGameOver))
 
         if isGameOver:
             msg = 'Player Win' if disk == 1 else 'Computer Win'
@@ -57,26 +58,26 @@ class Board(QGraphicsObject):
          * * *
         *  *  *
         4  3  2
+
+        in 4 area
         """
         for i in range(Board.ROW):
             for j in range(Board.COL):
                 if self.grid[i][j] == disk:
-                    print('Found disk[%d] at (%d,%d)' % (disk, j, i))
-
+                    # Area 1
                     if j in range(3) and i in range(Board.ROW - 3):
                         if self.check4Direction(i, j, disk, dir4=[1, 2, 3]):
                             return True
-
-                    elif j in range(4, Board.COL - 3) \
-                                    and i in range(Board.ROW - 3):
+                    # Area 2
+                    elif j in range(3, Board.COL - 3) and i in range(Board.ROW - 3):
                         if self.check4Direction(i, j, disk, dir4=[1, 2, 3, 4]):
                             return True
-
+                    # Area 3
                     elif j in range(Board.COL - 4, Board.COL) \
                                     and i in range(Board.ROW - 3):
                         if self.check4Direction(i, j, disk, dir4=[3, 4]):
                             return True
-
+                    # Area 4
                     elif j in range(Board.COL - 3) \
                                     and i in range(Board.ROW - 4, Board.ROW):
                         if  self.check4Direction(i, j, disk, dir4=[1]):
@@ -84,17 +85,23 @@ class Board(QGraphicsObject):
         return False
 
     def check4Direction(self, i, j, disk, dir4=[]):
-        # Check horizontaly next 3 right cells
+        # Horizontaly next 3 right cells
         if 1 in dir4 and self.grid[i][j+1:j+4] == [disk] * 3:
+            print("Horizontally 4 connected!!")
             return True
-        # Check diagonally next 3 down-right cells
-        if 2 in dir4 and self.grid[i+1:i+4][j+1:j+4] == [disk] * 3:
+        # Diagonally next 3 down-right cells
+        if 2 in dir4 and \
+            [col[j+k+1] for k, col in enumerate(self.grid[i+1:i+4])] == [disk] * 3:
+            print("R-Diagonally 4 connected!!")
             return True
-        # Check veritically next 3 down cells
-        if 3 in dir4 and self.grid[i+1:i+4][j] == [disk] * 3:
+        # Veritically next 3 down cells
+        if 3 in dir4 and [col[j] for col in self.grid[i+1:i+4]] == [disk] * 3:
+            print("Vertically 4 connected!!")
             return True
-        # Check diagonally next 4 down-left cells
-        if 4 in dir4 and self.grid[i-1:i-4][j-1:j-4] == [disk] * 3:
+        # Diagonally next 4 down-left cells
+        if 4 in dir4 and \
+            [col[j-k-1] for k, col in enumerate(self.grid[i+1:i+4])] == [disk] * 3:
+            print("L-Diagonally 4 connected!!")
             return True
 
 
@@ -121,11 +128,12 @@ class DropArea(QGraphicsObject):
         super().__init__()
         self.setAcceptDrops(True)
         self.board = board
+        self.disk = 1
 
     def dropEvent(self, event):
         col, row = self.getCellToDrop(event.pos().x(), event.pos().y())
         # The last argument is a flag for Player
-        self.board.updateGrid(col, row, 1)
+        self.board.updateGrid(col, row, self.disk)
 
     def getCellToDrop(self, mouseX, mouseY):
         currentCol = int((mouseX + 200) // Board.CELLSIZE)
@@ -152,12 +160,9 @@ class Computer:
         pass
 
     def putDisk(self, grid):
-        # Show all cells where the computer can put a disk
-        # print(self.getAllValidCells())
         validCells = self.getAllValidCells(grid)
         num = random.randint(0, len(validCells)-1)
         return validCells[num][0], validCells[num][1]
-
 
     def getAllValidCells(self, grid):
         validCells = []
