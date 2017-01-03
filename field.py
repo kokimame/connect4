@@ -40,7 +40,6 @@ class Board(QGraphicsObject):
         self.update()
 
         isGameOver = self.isGameOver(disk)
-        print("isGameOver: "+str(isGameOver))
 
         if isGameOver:
             msg = 'Player Win' if disk == 1 else 'Computer Win'
